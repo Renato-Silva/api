@@ -8,7 +8,9 @@ use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
+use VOSTPT\ServiceClients\Contracts\GooglePlacesService as GooglePlacesServiceContract;
 use VOSTPT\ServiceClients\Contracts\ProCivServiceClient as ProCivServiceClientContract;
+use VOSTPT\ServiceClients\GooglePlacesService;
 use VOSTPT\ServiceClients\ProCivServiceClient;
 
 class ServiceClientServiceProvider extends ServiceProvider implements DeferrableProvider
@@ -27,6 +29,15 @@ class ServiceClientServiceProvider extends ServiceProvider implements Deferrable
 
             return new ProCivServiceClient($client, $app['config']['services.prociv.hostname']);
         });
+
+        // Google places service client
+        $this->app->singleton(GooglePlacesServiceContract::class, function ($app) {
+            $client = new Client([
+                // Do not throw exceptions on HTTP 4xx/5xx status
+                RequestOptions::HTTP_ERRORS => false,
+            ]);
+            return new GooglePlacesService($client, $app['config']['services.googleapi.hostname']);
+        });
     }
 
     /**
@@ -36,6 +47,7 @@ class ServiceClientServiceProvider extends ServiceProvider implements Deferrable
     {
         return [
             ProCivServiceClientContract::class,
+            GooglePlacesServiceContract::class,
         ];
     }
 }
